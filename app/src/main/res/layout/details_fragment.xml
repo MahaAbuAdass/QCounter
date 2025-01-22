@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="100">
+
+
+    <LinearLayout
+        android:id="@+id/layout_title"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="28.89"
+        android:background="@color/blue"
+        android:backgroundTint="@color/blue"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_doctor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:fontFamily="@font/gedinartwomedium1e"
+            android:textSize="135sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.44"
+        android:background="@color/yellow">
+
+        <View
+        android:id="@+id/vector"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FCD82B"
+        android:elevation="10dp"
+        android:layout_marginBottom="3dp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="69.67"
+        android:weightSum="100">
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="37.81"
+            android:background="@color/grey"
+            android:orientation="vertical"
+            android:paddingTop="20dp">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/gedinartwomedium1e"
+                android:textColor="@color/dark_grey"
+                android:textSize="140sp" />
+
+            <TextView
+                android:id="@+id/counter_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/avenirheavy"
+                android:textColor="@color/blue"
+                android:textSize="337.5sp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.63"
+            android:background="@color/yellow">
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_weight="61.56"
+            android:orientation="vertical"
+
+            >
+
+
+            <TextView
+                android:fontFamily="@font/gedinartwomedium1e"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="تذكرة رقم"
+                android:textColor="@color/dark_grey"
+                android:textSize="140sp" />
+
+            <TextView
+                android:id="@+id/ticket_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/avenirheavy"
+                android:textColor="@color/blue"
+                android:textSize="337.5sp" />
+
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

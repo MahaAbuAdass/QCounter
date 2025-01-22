@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base config allows cleartext (HTTP) traffic globally -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Additional config to explicitly allow all subdomains and localhost traffic -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">*.*</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain> <!-- Emulator localhost -->
+    </domain-config>
+</network-security-config>
