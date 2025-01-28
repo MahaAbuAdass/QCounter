@@ -25,6 +25,21 @@ object PreferenceManager {
         return getPreferences(context).getBoolean(KEY_IS_ADDED_URL_2, false)
     }
 
+    // Get the flag value from SharedPreferences
+    fun getDeviceConfigurationApiFlag(context: Context): Boolean {
+        // Use applicationContext to ensure that context is valid
+        val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("isDeviceConfigurationAPICalled", false)
+    }
+
+    fun setDeviceConfigurationApiFlag(isCalled: Boolean, context: Context) {
+        // Use applicationContext to ensure that context is valid
+        val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("isDeviceConfigurationAPICalled", isCalled)
+        editor.apply()  // Save the flag asynchronously
+    }
+
 
 
     fun saveUrl(context: Context, baseUrl: String , isAddedUrl : Boolean) {

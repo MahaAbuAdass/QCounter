@@ -1,126 +1,188 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:weightSum="100">
+
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/view_pager_layout"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="match_parent"
+        >
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:background="@color/white"
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+<LinearLayout
+    android:id="@+id/details_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100"
+    android:orientation="vertical"
 
 
-    <LinearLayout
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_title"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="28.89"
-        android:background="@color/blue"
-        android:backgroundTint="@color/blue"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_weight="30"
+        android:background="@color/white"
+        android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/tv_doctor"
+            android:id="@+id/tv_counter_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:text="Counter"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/blue"
+            android:textSize="175sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_counter_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            tools:text="77"
+            android:layout_marginBottom="40dp"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="300sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/tv_counter_title_ar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textColor="@color/white"
-            android:fontFamily="@font/gedinartwomedium1e"
-            android:textSize="135sp" />
-    </LinearLayout>
+            android:layout_marginEnd="50dp"
+            android:gravity=""
+            android:layout_marginBottom="10dp"
 
-    <LinearLayout
+            android:text="شباك"
+            android:textColor="@color/blue"
+            android:textSize="175sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_background"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1.44"
-        android:background="@color/yellow">
+        android:layout_weight="60"
+        android:weightSum="100"
+        android:visibility="visible"
+        tools:background="@color/blue"
+        >
 
-        <View
-        android:id="@+id/vector"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FCD82B"
-        android:elevation="10dp"
-        android:layout_marginBottom="3dp" />
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="69.67"
-        android:weightSum="100">
-
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="37.81"
-            android:background="@color/grey"
-            android:orientation="vertical"
-            android:paddingTop="20dp">
-
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:fontFamily="@font/gedinartwomedium1e"
-                android:textColor="@color/dark_grey"
-                android:textSize="140sp" />
-
-            <TextView
-                android:id="@+id/counter_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:fontFamily="@font/avenirheavy"
-                android:textColor="@color/blue"
-                android:textSize="337.5sp" />
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.63"
-            android:background="@color/yellow">
-
-
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
-            android:layout_weight="61.56"
-            android:orientation="vertical"
-
-            >
-
-
-            <TextView
-                android:fontFamily="@font/gedinartwomedium1e"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="تذكرة رقم"
-                android:textColor="@color/dark_grey"
-                android:textSize="140sp" />
 
             <TextView
                 android:id="@+id/ticket_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:fontFamily="@font/avenirheavy"
-                android:textColor="@color/blue"
-                android:textSize="337.5sp" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="Z000"
+                android:textStyle="bold"
+                android:layout_marginBottom="60dp"
+                android:textColor="@color/white"
+                android:textSize="457.5sp" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        >
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="25"
+            android:id="@+id/logo"
+            tools:src="@drawable/logo"
+            />
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_weight="0.1"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:background="@color/black"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent">-->
+
+<!--            <View-->
+<!--                android:id="@+id/vector"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="0.01dp"-->
+<!--                android:layout_marginBottom="2dp"-->
+<!--                android:background="#FCD82B"-->
+<!--                android:elevation="10dp" />-->
+<!--        </LinearLayout>-->
 
 
 
-        </LinearLayout>
+
+
+
+
+
+        <TextView
+            android:id="@+id/arabicText"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="75"
+            android:layout_gravity="end"
+            android:ellipsize="marquee"
+            android:fontFamily="@font/gedinartwomedium1e"
+            android:padding="1dp"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_marginStart="5dp"
+            android:singleLine="true"
+            android:textColor="@color/black"
+            android:textSize="48sp"
+            tools:text="هذا مثال طويل لنص باللغة العربية مصمم للتمرير بشكل مستمر من اليمين إلى اليسار." />
 
     </LinearLayout>
 
 
 </LinearLayout>
+
+
+</LinearLayout>
+
+
