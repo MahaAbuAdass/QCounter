@@ -15,12 +15,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.widget.TextView
+import android.widget.Toast
 import android.widget.VideoView
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
@@ -79,7 +81,7 @@ class DetailsFragment : Fragment() {
 
 
     private val configurationHandler = Handler()
-    private val refreshConfigurationInterval = 60000L  // 1 min
+    private val refreshConfigurationInterval = 20000L  // 1 min
 
     private val configurationRunnable = object : Runnable {
         override fun run() {
@@ -233,7 +235,10 @@ class DetailsFragment : Fragment() {
 
 
             binding.arabicText.text = deviceConfiguration.ScrollMessageAr
-            setupMarquee(arabicTextView, true, 15000L)   // Arabic text (right to left)
+            setupMarquee(
+                arabicTextView, true, 15000L)
+         //   Toast.makeText(requireContext(), deviceConfiguration.ScrollMessageAr, Toast.LENGTH_SHORT).show()
+            // Arabic text (right to left)
 
 
             PreferenceManager.setDeviceConfigurationApiFlag(true, requireContext())
@@ -277,9 +282,12 @@ class DetailsFragment : Fragment() {
         }
     }
 
+
     private fun callDeviceConfigurationAPI() {
-       val baseUrl = context?.let { PreferenceManager.getBaseUrl(it) }
-     //    baseUrl  = "http://192.168.30.50/APIPub2509/"
+     //  val baseUrl = context?.let { PreferenceManager.getBaseUrl(it) }
+        val baseUrl = PreferenceManager.getBaseUrl(requireContext())
+
+        //    baseUrl  = "http://192.168.30.50/APIPub2509/"
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -299,11 +307,6 @@ class DetailsFragment : Fragment() {
         configurationHandler.removeCallbacks(configurationRunnable)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        handler.removeCallbacksAndMessages(null)
-        configurationHandler.removeCallbacksAndMessages(null)
-    }
 
     private fun callTicketDetailsAPI() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -369,9 +372,11 @@ class DetailsFragment : Fragment() {
     }
 
     private fun callGetImagesAndVideosApi() {
+
+       //val newbranchCode = "3"
         val baseUrl = PreferenceManager.getBaseUrl(requireContext())
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            imagesAndVideosViewModel.getImagesAndVideos(baseUrl?:"")
+            imagesAndVideosViewModel.getImagesAndVideos(baseUrl?:"",branchCode?:"")
         }
     }
 
@@ -399,14 +404,16 @@ class DetailsFragment : Fragment() {
         }
     }
 
+    private var imagesVideosHandler: Handler? = null
+    private var imagesVideosRunnable: Runnable? = null
+
     private fun setupViewPager(fileList: List<FileURL>) {
         if (fileList.isEmpty()) {
+            // Handle empty list case
             binding.layoutBackground.visibility = View.VISIBLE
             binding.detailsLayout.visibility = View.VISIBLE
-
             binding.viewPager.visibility = View.GONE
             binding.viewPagerLayout.visibility = View.GONE
-
             binding.ticketNumber.text = storeTicketNumber
         } else {
             // Step 1: Sort files by the `OrderNo` field
@@ -417,53 +424,55 @@ class DetailsFragment : Fragment() {
             Log.d("OrderedMediaList", "Ordered media list: ${orderedMediaList.joinToString { it.fileName ?: "null" }}")
 
             // Step 2: Set up ViewPager adapter
-            val mediaAdapter = MediaAdapter(requireContext(), orderedMediaList, binding.viewPager)
+            val mediaAdapter = MediaAdapter(
+                requireContext(),
+                orderedMediaList,
+                binding.viewPager
+            )
             binding.viewPager.adapter = mediaAdapter
 
-            // Step 3: Handler to cycle through the list based on duration
-            val imagesVideosHandler = Handler(Looper.getMainLooper())
-            val imagesVideosRunnable = object : Runnable {
-                var currentItem = 0
+            // Step 3: Clear previous Handler and Runnable
+            imagesVideosHandler?.removeCallbacksAndMessages(null)
+            imagesVideosHandler = Handler(Looper.getMainLooper())
 
-                override fun run() {
-                    // Display the current item in the ViewPager
-                    binding.viewPager.setCurrentItem(currentItem, true)
+            // Step 4: Use OnPageChangeListener to start the duration count after the item is fully displayed
+            binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
 
-                    // Get the duration for the current media
-                    val currentMedia = orderedMediaList[currentItem]
+                    // Get the current media item
+                    val currentMedia = orderedMediaList[position]
                     val duration = calculateDuration(currentMedia)
 
                     Log.d(
-                        "HandlerRunnable",
-                        "Displaying item: $currentItem, Duration: $duration ms, File: ${currentMedia.fileName}"
+                        "PageChangeListener",
+                        "Item fully displayed: $position, Duration: $duration ms, File: ${currentMedia.fileName}"
                     )
 
-                    // Move to the next item (cyclically)
-                    currentItem = (currentItem + 1) % orderedMediaList.size
+                    // Remove any pending callbacks to avoid overlapping
+                    imagesVideosHandler?.removeCallbacksAndMessages(null)
 
-                    // Schedule the next item based on the calculated duration
-                    imagesVideosHandler.postDelayed(this, duration)
+                    // Schedule the next item after the current item's duration
+                    imagesVideosHandler?.postDelayed({
+                        // Move to the next item
+                        val nextItem = (position + 1) % orderedMediaList.size
+                        binding.viewPager.setCurrentItem(nextItem, true)
+                    }, duration)
                 }
-            }
+            })
 
-            // Start the cycle after the duration of the first media item
-            imagesVideosHandler.postDelayed(imagesVideosRunnable, calculateDuration(orderedMediaList[0]))
+            // Step 5: Display the first item immediately
+            binding.viewPager.setCurrentItem(0, true)
         }
     }
-
-    // This function calculates the correct duration for each file (image or video)
     private fun calculateDuration(file: FileURL): Long {
         return try {
-            if (file.fileName != null && isVideo(file.fileName)) {
-                // If it's a video, use the duration from the API (or default to 5000ms)
-                file.Duration?.toLongOrNull() ?: 5000L // Default video duration
-            } else {
-                // If it's an image, use a default duration (e.g., 3000ms)
-                3000L
-            }
+            // Use the duration from the API (must be a valid positive number)
+            file.Duration?.toLongOrNull()?.takeIf { it > 0 }
+                ?: throw IllegalArgumentException("Invalid duration for file: ${file.fileName}")
         } catch (e: Exception) {
-            Log.e("MediaAdapter", "Error calculating duration for file: ${file.fileName}. Defaulting to 3000ms.", e)
-            3000L
+            Log.e("MediaAdapter", "Error calculating duration for file: ${file.fileName}.", e)
+            throw e // Re-throw the exception to ensure the issue is not ignored
         }
     }
 
@@ -480,7 +489,7 @@ class DetailsFragment : Fragment() {
         val ipv4Address = getIPAddress(true)
         println("IPv4 Address: $ipv4Address")
 
-//           Toast.makeText(requireContext(), "ip address: $ipv4Address", Toast.LENGTH_SHORT).show()
+       //    Toast.makeText(requireContext(), "ip address: $ipv4Address", Toast.LENGTH_SHORT).show()
 
         // Get IPv6 address
         val ipv6Address = getIPAddress(false)
@@ -490,6 +499,15 @@ class DetailsFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             counterDetailsViewModel.getCounterDetails(ipv4Address?:"")
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        imagesVideosHandler?.removeCallbacksAndMessages(null)
+        imagesVideosHandler = null
+        imagesVideosRunnable = null
+        handler.removeCallbacksAndMessages(null)
+        configurationHandler.removeCallbacksAndMessages(null)
     }
 
     private fun observerCounterDetailsAPI() {

@@ -10,5 +10,4 @@ data class CountersResponse (
     @SerialName("BranchCode"    ) var BranchCode    : String? = null,
     @SerialName("CounterTypeID" ) var CounterTypeID : String? = null
 
-
 )

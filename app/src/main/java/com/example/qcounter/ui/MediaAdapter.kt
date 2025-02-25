@@ -17,7 +17,7 @@ import com.example.qcounter.dataclass.FileURL
 class MediaAdapter(
     private val context: Context,
     private val mediaList: List<FileURL>,
-    private val viewPager: ViewPager2
+    private val viewPager: ViewPager2, // Pass the ViewPager2
 ) : RecyclerView.Adapter<MediaAdapter.MediaViewHolder>() {
 
     inner class MediaViewHolder(val binding: ItemMediaBinding) :
@@ -33,23 +33,29 @@ class MediaAdapter(
 
         if (file.fileName != null) {
             if (isVideo(file.fileName!!)) {
-                // Handle video
                 holder.binding.videoView.apply {
                     visibility = View.VISIBLE
                     setVideoURI(Uri.parse(file.fileName))
+
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = false
                         mediaPlayer.start()
 
-                        Log.d(
-                            "VideoDuration",
-                            "Video prepared at position: $position, Duration: ${mediaPlayer.duration} ms"
-                        )
+                        val videoDuration = mediaPlayer.duration.toLong()
+                        MediaAdapter.videoDurations[file.fileName!!] = videoDuration
+
+                        Log.d("VideoDuration", "Video prepared at position: $position, Duration: ${videoDuration} ms")
+
+                        setOnCompletionListener {
+                            handler?.post {
+                                val nextPosition = (position + 1) % mediaList.size
+                                viewPager.setCurrentItem(nextPosition, true)
+                            }
+                        }
                     }
                 }
                 holder.binding.imageView.visibility = View.GONE
             } else {
-                // Handle image
                 holder.binding.imageView.apply {
                     visibility = View.VISIBLE
                     Glide.with(context)
@@ -60,32 +66,14 @@ class MediaAdapter(
             }
         }
     }
-
-
     override fun getItemCount(): Int = mediaList.size
 
     private fun isVideo(fileName: String): Boolean {
         val videoExtensions = listOf(".mp4", ".mov", ".avi", ".mkv")
         return videoExtensions.any { fileName.endsWith(it, ignoreCase = true) }
     }
-
-    // Calculates the duration in milliseconds based on media type
-    private fun calculateDuration(file: FileURL): Long {
-        return try {
-            // For video, use the duration from the file (or fallback to default)
-            if (isVideo(file.fileName!!)) {
-                file.Duration?.toLongOrNull() ?: 5000L // Default video duration is 5000ms (example)
-            } else {
-                // For images, use a default duration (e.g., 3000ms)
-                3000L
-            }
-        } catch (e: Exception) {
-            Log.e(
-                "MediaAdapter",
-                "Invalid duration format for file: ${file.fileName}, defaulting to 3000ms",
-                e
-            )
-            3000L // Default to 3000ms if the duration is not valid
-        }
+    companion object {
+        val videoDurations = mutableMapOf<String, Long>()
     }
+
 }

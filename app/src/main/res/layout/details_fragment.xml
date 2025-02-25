@@ -98,8 +98,9 @@
         android:layout_height="0dp"
         android:layout_weight="60"
         android:weightSum="100"
+
         android:visibility="visible"
-        tools:background="@color/blue"
+        tools:background="@drawable/bg_logo"
         >
 
 
@@ -133,7 +134,7 @@
             android:layout_height="match_parent"
             android:layout_weight="25"
             android:id="@+id/logo"
-            tools:src="@drawable/logo"
+            tools:src="@drawable/bg"
             />
 
 <!--        <LinearLayout-->
@@ -161,16 +162,17 @@
 
         <TextView
             android:id="@+id/arabicText"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="75"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:ellipsize="marquee"
             android:fontFamily="@font/gedinartwomedium1e"
             android:padding="1dp"
+            android:marqueeRepeatLimit="marquee_forever"
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
+
             android:layout_marginStart="5dp"
             android:singleLine="true"
             android:textColor="@color/black"

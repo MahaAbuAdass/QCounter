@@ -22,10 +22,10 @@ class ImagesAndVideosViewModel (context: Context) : ViewModel()  {
     private val _errorResponse = MutableLiveData<String?>()
     val errorResponse: LiveData<String?> = _errorResponse
 
-    suspend fun getImagesAndVideos(baseUrl:String){
+    suspend fun getImagesAndVideos(baseUrl:String , branchid: String){
         viewModelScope.launch {
             try {
-                val response = retrofitBuilder.getImagesAndVideos(baseUrl)
+                val response = retrofitBuilder.getImagesAndVideos(baseUrl,branchid)
                 _urlsResponse.postValue(response)
             } catch (e: HttpException){
                 handleHttpException(e)

@@ -31,8 +31,9 @@ interface ApiService {
 
     @GET("api/GetVideoImageBoard")
     suspend fun getImagesAndVideos(
-        @Query("BaseURL") baseURL: String
-    ) : List<FileURL>
+        @Query("BaseURL") baseURL: String,
+        @Query("BranchCode") branchCode: String ,
+        ) : List<FileURL>
 
 
 }
