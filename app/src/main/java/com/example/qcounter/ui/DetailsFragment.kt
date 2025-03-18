@@ -51,6 +51,7 @@ class DetailsFragment : Fragment() {
 
     private lateinit var imagesAndVideosViewModel: ImagesAndVideosViewModel
 
+    private var enabledAds : String ?=null
     private var filesList : List<FileURL> ?=null
     private var storeTicketNumber : String ?=null
     private var isDeviceConfigurationApiCalled = false  // Flag to track if API has been called
@@ -81,7 +82,7 @@ class DetailsFragment : Fragment() {
 
 
     private val configurationHandler = Handler()
-    private val refreshConfigurationInterval = 20000L  // 1 min
+    private val refreshConfigurationInterval = 20000L
 
     private val configurationRunnable = object : Runnable {
         override fun run() {
@@ -157,31 +158,53 @@ class DetailsFragment : Fragment() {
     private fun observerDeviceConfigurationAPI() {
         deviceConfigurationViewModel.getDeviceConfigurationResponse.observe(viewLifecycleOwner) { deviceConfiguration ->
 
+            enabledAds = deviceConfiguration.EnableAds
+            Log.v("returned ads",enabledAds?:"")
+
+            callTicketDetailsAPI()
+            observerTicketdetailsAPI()
+
+
             val headerBackgroundColor = Color.parseColor(deviceConfiguration.ButtonColor)
             binding.layoutTitle.setBackgroundColor(headerBackgroundColor)
 
-            val fontName =
-                deviceConfiguration.FontType // Assume the API provides the font name without extension
+            val fontName = deviceConfiguration.FontType ?:"Arial"
+            val boldFont = "${fontName}bold"
+            Log.v("fonttttt", boldFont)
+
+//            val typeface = Typeface.create(fontName, Typeface.NORMAL)
+//            val boldTypeface = Typeface.create(fontName, Typeface.BOLD)
+//
+//            binding.tvCounterTitle.typeface = typeface
+//            binding.tvCounterTitleAr.typeface = typeface
+//            binding.tvCounterNo.typeface = boldTypeface
+//            binding.ticketNumber.typeface = boldTypeface
+//            Log.v("fonttttt", typeface.toString())
+//            Log.v("fonttttt", fontName)
+//
 
             try {
-                val fontResId =
-                    resources.getIdentifier(fontName, "font", requireContext().packageName)
+
+                val fontResId = resources.getIdentifier(fontName, "font", requireContext().packageName)
+                val fontResIdBold = resources.getIdentifier(boldFont, "font", requireContext().packageName)
+
 
                 if (fontResId != 0) {
                     // Load the font and set it to the TextView
                     val typeface = ResourcesCompat.getFont(requireContext(), fontResId)
+                    val boldTypeFace = ResourcesCompat.getFont(requireContext(),fontResIdBold)
                     binding.tvCounterTitle.typeface = typeface
                     binding.tvCounterTitleAr.typeface = typeface
-//                    binding.ticketNo.typeface = typeface
-//                    binding.ticketNoAr.typeface = typeface
+                    binding.ticketNumber.typeface = boldTypeFace
+                    binding.tvCounterNo.typeface = boldTypeFace
 
 
                 } else {
                     // Fallback if the font is not found
                     binding.tvCounterTitle.typeface = Typeface.DEFAULT
                     binding.tvCounterTitleAr.typeface = Typeface.DEFAULT
-//                    binding.ticketNo.typeface = Typeface.DEFAULT
-//                    binding.ticketNoAr.typeface = Typeface.DEFAULT
+                    binding.ticketNumber.typeface = Typeface.DEFAULT_BOLD
+                    binding.tvCounterNo.typeface = Typeface.DEFAULT_BOLD
 
                 }
             } catch (e: Exception) {
@@ -189,40 +212,50 @@ class DetailsFragment : Fragment() {
                 // Handle errors gracefully, and fallback to a default typeface
                 binding.tvCounterTitle.typeface = Typeface.DEFAULT
                 binding.tvCounterTitleAr.typeface = Typeface.DEFAULT
-//                binding.ticketNo.typeface = Typeface.DEFAULT
-//                binding.ticketNoAr.typeface = Typeface.DEFAULT
+                binding.ticketNumber.typeface = Typeface.DEFAULT_BOLD
+                binding.tvCounterNo.typeface = Typeface.DEFAULT_BOLD
             }
 
             val fontColor = try {
                 Color.parseColor(deviceConfiguration.FontColor ?: "#000000") // Default to black
             } catch (e: Exception) {
-                Color.BLACK // Fallback color
+                Color.BLACK
             }
             binding.tvCounterTitle.setTextColor(fontColor)
             binding.tvCounterTitleAr.setTextColor(fontColor)
 //            binding.ticketNo.setTextColor(fontColor)
 //            binding.ticketNoAr.setTextColor(fontColor)
 
+            val bgFlag = deviceConfiguration.ysnBGColor
 
-            Glide.with(requireContext())
-                .asDrawable() // Load the image as a Drawable
-                .load(deviceConfiguration.BGImage) // Load the BGImage from the API
-                .skipMemoryCache(true) // Skip memory caching
-                .diskCacheStrategy(DiskCacheStrategy.NONE) // Skip disk caching
-                .signature(ObjectKey(System.currentTimeMillis().toString())) // Force reload
-                .into(object : CustomTarget<Drawable>() {
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        transition: Transition<in Drawable>?
-                    ) {
-                        // Set the loaded image as the background for the ConstraintLayout
-                        binding.layoutBackground.background = resource
-                    }
+            if (bgFlag == "True") {
+                val backgroundColor = Color.parseColor(deviceConfiguration.BGColor)
+                binding.layoutBackground.setBackgroundColor(backgroundColor)
 
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                        // Optional: Handle cleanup if needed
-                    }
-                })
+            } else {
+                Glide.with(requireContext())
+                    .asDrawable() // Load the image as a Drawable
+                    .load(deviceConfiguration.BGImage) // Load the BGImage from the API
+                    .skipMemoryCache(true) // Skip memory caching
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // Skip disk caching
+                    .signature(ObjectKey(System.currentTimeMillis().toString())) // Force reload
+                    .into(object : CustomTarget<Drawable>() {
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            transition: Transition<in Drawable>?
+                        ) {
+                            // Set the loaded image as the background for the ConstraintLayout
+                            binding.layoutBackground.background = resource
+                        }
+
+                        override fun onLoadCleared(placeholder: Drawable?) {
+                            // Optional: Handle cleanup if needed
+                        }
+                    })
+            }
+
+
+
 
             Glide.with(requireContext())
                 .load(deviceConfiguration.LogoImage)
@@ -317,12 +350,20 @@ class DetailsFragment : Fragment() {
     private fun observerTicketdetailsAPI() {
         ticketDetailsViewModel.getTicketDetailsResponse.observe(viewLifecycleOwner) { ticketResponse ->
 
-            if (ticketResponse.ticketno == "----") {
-                // Only call the API if the previous ticket number was not "----"
-                if (previousTicketNo != "----") {
-                    // This ensures that you don't call the API again if the ticket number was already "----" previously.
-                    callGetImagesAndVideosApi()
-                    observerImagesAndVideosViewModel()
+            if ((ticketResponse.ticketno == "----") ){
+
+                Log.v("enabled ads",enabledAds?:"")
+                if (enabledAds != "False") {
+
+                    // Only call the API if the previous ticket number was not "----"
+                    if (previousTicketNo != "----") {
+
+                        Log.v("ads", "true")
+
+                        // This ensures that you don't call the API again if the ticket number was already "----" previously.
+                        callGetImagesAndVideosApi()
+                        observerImagesAndVideosViewModel()
+                    }
                 }
 
                 if (filesList.isNullOrEmpty()) {
@@ -382,26 +423,30 @@ class DetailsFragment : Fragment() {
 
     private fun observerImagesAndVideosViewModel()
     {
-        imagesAndVideosViewModel.urlsResponse.observe(viewLifecycleOwner) { fileList ->
-            filesList = fileList
 
-            if (!fileList.isNullOrEmpty()) {
+            imagesAndVideosViewModel.urlsResponse.observe(viewLifecycleOwner) { fileList ->
+                filesList = fileList
 
-                setupViewPager(fileList)
-            } else {
-                Log.v("observeMediaList", "Empty or null media list")
+                if (!fileList.isNullOrEmpty()) {
+
+                    setupViewPager(fileList)
+                } else {
+                    Log.v("observeMediaList", "Empty or null media list")
+                }
             }
-        }
 
-        imagesAndVideosViewModel.errorResponse.observe(viewLifecycleOwner) {
-            Log.e("observeMediaList", "Error fetching media list: $it")
-            binding.layoutBackground.visibility = View.VISIBLE
-            binding.detailsLayout.visibility = View.VISIBLE
+            imagesAndVideosViewModel.errorResponse.observe(viewLifecycleOwner) {
+                Log.e("observeMediaList", "Error fetching media list: $it")
+                binding.layoutBackground.visibility = View.VISIBLE
+                binding.detailsLayout.visibility = View.VISIBLE
 
-            binding.viewPager.visibility = View.GONE
-            binding.viewPagerLayout.visibility=View.GONE
+                binding.viewPager.visibility = View.GONE
+                binding.viewPagerLayout.visibility=View.GONE
 
-        }
+            }
+
+
+
     }
 
     private var imagesVideosHandler: Handler? = null
@@ -527,6 +572,7 @@ class DetailsFragment : Fragment() {
 //            }
 
             // Log the flag status and check the flow
+
             callTicketDetailsAPI()
             observerTicketdetailsAPI()
 

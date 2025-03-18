@@ -39,6 +39,7 @@ class MediaAdapter(
 
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = false
+                        mediaPlayer.setVolume(0f, 0f) // Mute the video
                         mediaPlayer.start()
 
                         val videoDuration = mediaPlayer.duration.toLong()
