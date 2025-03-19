@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.qcounter"
-        minSdk = 21
+        minSdk = 21 // will work on android 5 and above
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
