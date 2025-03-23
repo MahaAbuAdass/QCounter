@@ -8,7 +8,9 @@ data class CountersResponse (
 
     @SerialName("counterno"     ) var counterno     : String? = null,
     @SerialName("BranchCode"    ) var BranchCode    : String? = null,
-    @SerialName("CounterTypeID" ) var CounterTypeID : String? = null
+    @SerialName("CounterTypeID" ) var CounterTypeID : String? = null,
+    @SerialName("ResourceDisplay" ) var ResourceDisplay : String? = null
+
 
 
 )

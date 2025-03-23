@@ -2,16 +2,12 @@ package com.example.qcounter.ui
 
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.qcounter.GenericViewModelFactory
 import com.example.qcounter.databinding.DetailsFragmentBinding
@@ -20,19 +16,18 @@ import com.example.qcounter.viewmodel.TicketDetailsViewModel
 import com.example.slaughterhousescreen.util.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.net.NetworkInterface
-import java.util.concurrent.atomic.AtomicBoolean
 
 class DetailsFragment : Fragment() {
 
-    private lateinit var binding : DetailsFragmentBinding
+    private lateinit var binding: DetailsFragmentBinding
     private lateinit var counterDetailsViewModel: CounterDetailsViewModel
-    private lateinit var ticketDetailsViewModel : TicketDetailsViewModel
-    private var counterNumber : String ?= null
-    private var branchCode : String ?= null
-
+    private lateinit var ticketDetailsViewModel: TicketDetailsViewModel
+    private var counterNumber: String? = null
+    private var branchCode: String? = null
+    private var displayResourceName: String? = null
+    private var lastUpdateSource: String? = null
 
     private val handler = Handler()
     private val refreshInterval = 10000L // 10 seconds
@@ -51,12 +46,13 @@ class DetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DetailsFragmentBinding.inflate(inflater,container,false)
+        binding = DetailsFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         val getCounterFactory = GenericViewModelFactory(CounterDetailsViewModel::class) {
             CounterDetailsViewModel(requireContext())
@@ -65,11 +61,12 @@ class DetailsFragment : Fragment() {
             ViewModelProvider(this, getCounterFactory).get(CounterDetailsViewModel::class.java)
 
 
-        val getTicketFactory = GenericViewModelFactory(TicketDetailsViewModel::class){
+        val getTicketFactory = GenericViewModelFactory(TicketDetailsViewModel::class) {
             TicketDetailsViewModel(requireContext())
         }
 
-        ticketDetailsViewModel = ViewModelProvider(this,getTicketFactory).get(TicketDetailsViewModel::class.java)
+        ticketDetailsViewModel =
+            ViewModelProvider(this, getTicketFactory).get(TicketDetailsViewModel::class.java)
 
 
         calCounterDetailsAPI()
@@ -92,7 +89,7 @@ class DetailsFragment : Fragment() {
         handler.post(runnable)
     }
 
-        override fun onStop() {
+    override fun onStop() {
         super.onStop()
         handler.removeCallbacks(runnable)
     }
@@ -103,41 +100,55 @@ class DetailsFragment : Fragment() {
     }
 
 
-
     private fun observerTicketdetailsAPI() {
-        ticketDetailsViewModel.getTicketDetailsResponse.observe(viewLifecycleOwner){ ticketResponse->
+        ticketDetailsViewModel.getTicketDetailsResponse.observe(viewLifecycleOwner) { ticketResponse ->
 
-            binding.tvDoctor.text = ticketResponse.ResourceDisplay
+
+            lastUpdateSource = ticketResponse.ResourceDisplay
+
+            if (!lastUpdateSource.isNullOrEmpty()) {
+                binding.tvDoctor.text = lastUpdateSource
+            }
+//                if(!ticketResponse.ResourceDisplay.isNullOrEmpty()){
+//                "secondApi"
+//            } else {
+//                ""
+//            }
+
             binding.ticketNumber.text = ticketResponse.ticketno
-          //  Toast.makeText(requireContext(), "Ticket Number: ${ticketResponse.ticketno}", Toast.LENGTH_SHORT).show()
+            //  Toast.makeText(requireContext(), "Ticket Number: ${ticketResponse.ticketno}", Toast.LENGTH_SHORT).show()
 
         }
 
-        ticketDetailsViewModel.errorResponse.observe(viewLifecycleOwner){
-            Log.v("error","error")
+        ticketDetailsViewModel.errorResponse.observe(viewLifecycleOwner) {
+            Log.v("error", "error")
+            lastUpdateSource = ""
+            Log.v("LASTupdate", lastUpdateSource ?: "")
         }
-
     }
 
     private fun callTicketDetailsAPI() {
         CoroutineScope(Dispatchers.IO).launch {
-            ticketDetailsViewModel.getTicketDetails(counterNumber ?:"" , branchCode ?:"")
+            ticketDetailsViewModel.getTicketDetails(counterNumber ?: "", branchCode ?: "")
         }
-
-
     }
 
     private fun observerCounterDetailsAPI() {
-        counterDetailsViewModel.getCounterDetailsResponse.observe(viewLifecycleOwner){counterResponse->
+        counterDetailsViewModel.getCounterDetailsResponse.observe(viewLifecycleOwner) { counterResponse ->
 
             binding.counterNumber.text = counterResponse.counterno
             counterNumber = counterResponse.counterno.toString()
             branchCode = counterResponse.BranchCode.toString()
 
-            if (counterResponse.CounterTypeID == "1"){
-                binding.tvTitle.text = "شباك"
+            displayResourceName = counterResponse.ResourceDisplay
+
+            if (lastUpdateSource == "" ) {
+                binding.tvDoctor.text = counterResponse.ResourceDisplay
             }
-            else {
+
+            if (counterResponse.CounterTypeID == "1") {
+                binding.tvTitle.text = "شباك"
+            } else {
                 binding.tvTitle.text = "عيادة"
             }
 
@@ -146,8 +157,8 @@ class DetailsFragment : Fragment() {
 
         }
 
-        counterDetailsViewModel.errorResponse.observe(viewLifecycleOwner){
-            Log.v("error","error")
+        counterDetailsViewModel.errorResponse.observe(viewLifecycleOwner) {
+            Log.v("error", "error")
         }
 
     }
@@ -156,18 +167,17 @@ class DetailsFragment : Fragment() {
         // Get IPv4 address
         val ipv4Address = getIPAddress(true)
         println("IPv4 Address: $ipv4Address")
-     //   Toast.makeText(requireContext(), "ip address: $ipv4Address", Toast.LENGTH_SHORT).show()
+        //   Toast.makeText(requireContext(), "ip address: $ipv4Address", Toast.LENGTH_SHORT).show()
 
 
-            // Get IPv6 address
+        // Get IPv6 address
         val ipv6Address = getIPAddress(false)
         println("IPv6 Address: $ipv6Address")
-    //    Toast.makeText(requireContext(), "ip address: $ipv6Address", Toast.LENGTH_SHORT).show()
-
+        //    Toast.makeText(requireContext(), "ip address: $ipv6Address", Toast.LENGTH_SHORT).show()
 
 
         CoroutineScope(Dispatchers.IO).launch {
-            counterDetailsViewModel.getCounterDetails(ipv4Address?:"")
+            counterDetailsViewModel.getCounterDetails(ipv4Address ?: "")
         }
 
     }
@@ -186,7 +196,10 @@ class DetailsFragment : Fragment() {
                         } else {
                             if (!isIPv4) {
                                 val index = hostAddress.indexOf('%') // drop IPv6 zone suffix
-                                return if (index < 0) hostAddress else hostAddress.substring(0, index)
+                                return if (index < 0) hostAddress else hostAddress.substring(
+                                    0,
+                                    index
+                                )
                             }
                         }
                     }
